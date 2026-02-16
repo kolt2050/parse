@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Халява - Dual Column Search</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0d0d12;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --accent-color: #00d4ff;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .background-blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(80px);
+            opacity: 0.3;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            width: 400px;
+            height: 400px;
+        }
+
+        .blob-1 {
+            background: #00d4ff;
+            top: -100px;
+            right: -100px;
+        }
+
+        .blob-2 {
+            background: #4400ff;
+            bottom: -50px;
+            left: -50px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 span {
+            color: var(--accent-color);
+        }
+
+        header p {
+            color: var(--text-secondary);
+        }
+
+        .search-box {
+            display: flex;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 50px;
+            padding: 0.5rem;
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            transition: border-color 0.3s;
+        }
+
+        .search-box:focus-within {
+            border-color: var(--accent-color);
+        }
+
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+        }
+
+        .search-box button {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 0.8rem 2rem;
+            border-radius: 40px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-box button:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+        }
+
+        .keywords-dropdown {
+            margin-bottom: 2rem;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+        }
+
+        .keywords-dropdown summary {
+            padding: 0.8rem;
+            cursor: pointer;
+            color: #888;
+        }
+
+        .keywords-list {
+            padding: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .keyword-tag {
+            background: rgba(0, 212, 255, 0.1);
+            color: #00d4ff;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .loader {
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--card-bg);
+            border-top: 4px solid var(--accent-color);
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .search-status {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* Two-Column Layout */
+        .columns-wrapper {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .results-column {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .column-title {
+            color: var(--accent-color);
+            border-bottom: 2px solid rgba(0, 212, 255, 0.2);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
+            text-align: center;
+        }
+
+        .video-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: all 0.3s;
+        }
+
+        .video-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--accent-color);
+            transform: translateX(5px);
+        }
+
+        .video-card h3 {
+            margin: 0 0 8px 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .video-card h3 a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        .video-card h3 a:hover {
+            color: var(--accent-color);
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .columns-wrapper {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>YouTube <span>Search</span></h1>
+            <p>Двухколонный поиск AI новостей</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="query" placeholder="Доп. фильтр (опционально)..." autocomplete="off">
+            <button id="searchBtn">
+                <span>🔍</span> Найти халяву
+            </button>
+        </div>
+
+        <details class="keywords-dropdown">
+            <summary>📋 Список IT-слов (<span id="keywordsCount">0</span>)</summary>
+            <div id="keywordsList" class="keywords-list"></div>
+        </details>
+
+        <div id="loader" class="loader hidden">
+            <div class="spinner"></div>
+            <p>Ищем самое свежее...</p>
+        </div>
+
+        <div id="search-status" class="search-status hidden"></div>
+
+        <div id="results">
+            <!-- Две колонки появятся здесь -->
+        </div>
+    </div>
+
+    <script>
+        const searchBtn = document.getElementById('searchBtn');
+        const queryInput = document.getElementById('query');
+        const resultsContainer = document.getElementById('results');
+        const loader = document.getElementById('loader');
+        const searchStatus = document.getElementById('search-status');
+
+        async function performSearch() {
+            const query = queryInput.value.trim();
+            resultsContainer.innerHTML = '';
+            searchStatus.classList.add('hidden');
+            loader.classList.remove('hidden');
+            searchBtn.disabled = true;
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, is_it: true, free: true })
+                });
+                const data = await response.json();
+                displayResults(data);
+            } catch (err) {
+                console.error(err);
+                alert('Ошибка при поиске');
+            } finally {
+                loader.classList.add('hidden');
+                searchBtn.disabled = false;
+            }
+        }
+
+        function createVideoCard(video) {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+                <div class="video-info">
+                    <h3><a href="${video.link}" target="_blank">${video.title}</a></h3>
+                    <div class="meta">
+                        <span>👤 ${video.channel}</span>
+                        <span>📅 ${video.publishedTime || 'Недавно'}</span>
+                    </div>
+                </div>
+            `;
+            return card;
+        }
+
+        function displayResults(data) {
+            if (data.en || data.ru) {
+                searchStatus.innerHTML = `Найдено: <strong>${data.en.length} EN</strong> / <strong>${data.ru.length} RU</strong> видео`;
+                searchStatus.classList.remove('hidden');
+
+                const wrapper = document.createElement('div');
+                wrapper.className = 'columns-wrapper';
+
+                const enCol = document.createElement('div');
+                enCol.className = 'results-column';
+                enCol.innerHTML = '<h2 class="column-title">🇬🇧 English News</h2>';
+                data.en.forEach(v => enCol.appendChild(createVideoCard(v)));
+                if (data.en.length === 0) enCol.innerHTML += '<p style="text-align:center; color:#666;">Ничего не найдено</p>';
+
+                const ruCol = document.createElement('div');
+                ruCol.className = 'results-column';
+                ruCol.innerHTML = '<h2 class="column-title">🇷🇺 Russian News</h2>';
+                data.ru.forEach(v => ruCol.appendChild(createVideoCard(v)));
+                if (data.ru.length === 0) ruCol.innerHTML += '<p style="text-align:center; color:#666;">Ничего не найдено</p>';
+
+                wrapper.appendChild(enCol);
+                wrapper.appendChild(ruCol);
+                resultsContainer.appendChild(wrapper);
+            }
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        queryInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') performSearch(); });
+
+        async function loadKeywords() {
+            try {
+                const response = await fetch('/keywords');
+                const keywords = await response.json();
+                document.getElementById('keywordsCount').textContent = keywords.length;
+                document.getElementById('keywordsList').innerHTML = keywords.map(kw => `<span class="keyword-tag">${kw}</span>`).join('');
+            } catch (e) { }
+        }
+        loadKeywords();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,57 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment variables
+.env
+
+# Generated files
+static/last.html
+raw_results.json
+
+# Debug/test files
+debug_*.py
+test_*.py
+analyze_*.py
+compare_*.py
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local youtube-search-python (if using pip install instead)
+# youtube-search-python/

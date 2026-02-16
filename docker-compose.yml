@@ -1,0 +1,18 @@
+services:
+  web:
+    build: .
+    command: gunicorn -b 0.0.0.0:8080 app:app
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      - ./static:/app/static
+    restart: always
+
+  bot:
+    build: .
+    command: python telegram_bot.py
+    env_file: .env
+    volumes:
+      - ./static:/app/static
+    restart: always
